@@ -1,0 +1,19 @@
+# Environment
+.conda1/
+.env
+venv/
+env/
+
+# Python caching
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Data (Optional: ignore if large)
+# Data/
+
+# Models (Optional: ignore if large)
+# Models/
+
+# Streamlit
+.streamlit/
