@@ -13,10 +13,9 @@ import joblib
 import os
 import time
 import requests
-from decouple import config
-
-# --- CONFIG ---
-DEEPSEEK_API_KEY = config("DEEPSEEK_API_KEY", default="sk-3cf4b6378df44ee3bd3342b8e27ec2ee")
+# --- SESSION STATE & API SETUP ---
+if "deepseek_api_key" not in st.session_state:
+    st.session_state["deepseek_api_key"] = ""
 
 # --- PAGE CONFIG ---
 st.set_page_config(
@@ -25,6 +24,40 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded"
 )
+
+# --- API KEY ENTRY SCREEN ---
+if not st.session_state["deepseek_api_key"]:
+    st.markdown("""
+    <div class="header-box" style="margin-top: 5rem;">
+        <h1>🔐 Secure Engine Activation</h1>
+        <p>Please enter your DeepSeek API Key to enable AI clinical narratives.</p>
+        <p style="font-size: 0.9rem; color: #64748b;">Your key is stored only for this session and is deleted when the browser tab is closed.</p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    col_a, col_b, col_c = st.columns([1, 2, 1])
+    with col_b:
+        with st.form("api_key_form"):
+            api_key_input = st.text_input("Enter DeepSeek API Key", type="password", help="Get your key from platform.deepseek.com")
+            submitted = st.form_submit_button("Initialize BioMed AI")
+            
+            if submitted:
+                if api_key_input.startswith("sk-"):
+                    st.session_state["deepseek_api_key"] = api_key_input
+                    st.success("API Key activated! Launching engine...")
+                    time.sleep(1)
+                    st.rerun()
+                else:
+                    st.error("Invalid API key format. Ensure it starts with 'sk-'")
+        
+        st.markdown("""
+        <div style="text-align: center; margin-top: 2rem;">
+            <p style="color: #94a3b8; font-size: 0.8rem;">Powered by DeepSeek-V3 LLM for Healthcare Intelligence</p>
+        </div>
+        """, unsafe_allow_html=True)
+    st.stop()
+
+DEEPSEEK_API_KEY = st.session_state["deepseek_api_key"]
 
 # --- DEEPSEEK HELPERS (Enhanced with P.R.O.M.P.T. Framework & Multilingual Support) ---
 def build_explanation_prompt(
@@ -251,8 +284,14 @@ with st.sidebar:
     """, unsafe_allow_html=True)
     
     st.divider()
+    st.divider()
     st.write("Diagnostic Hub v5.0")
     st.info("🎯 **Target:** Disease Mapping\n\n🔍 **Insight:** Dual-layer & Explainable AI.")
+    
+    if st.button("🔄 Reset API Key", use_container_width=True):
+        st.session_state["deepseek_api_key"] = ""
+        st.rerun()
+        
     st.divider()
     st.caption("Secure Healthcare Intelligence")
 
